@@ -1,0 +1,198 @@
+---
+title: "BusaraDataPracticum_Week1_IntoR"
+author: "Daniel Mellow"
+date: "October 8, 2018"
+output: 
+  html_document:
+    self_contained: no
+---
+
+```{r preamble, include=FALSE}
+rm(list=ls())
+
+if (.Platform$OS.type == "windows") { 
+  
+  root <- paste("C:\\Users\\", Sys.info()["user"], sep= "")
+  
+} else if (Sys.info()["sysname"] == "Darwin") {
+  
+  root <- paste("/Users/", Sys.info()["user"], sep= "") 
+  
+} else if (.Platform$OS.type == "unix") { 
+  
+  root <- paste("/usr/", Sys.info()["user"], sep= "")
+  
+} else {
+  
+  stop("Unknown OS")
+  
+}
+toplevel = "\\Box Sync\\Data_Training_2018\\Cross_Division_Data_Training\\Data_Practicum_2018Q4" #NOTE: CHANGE FOR WINDOWS
+base = paste(root,toplevel,sep="")
+base
+
+
+### ---- packages --- ###
+
+#Function to check if package exists, load if not
+ipak <- function(pkg){
+  new_pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new_pkg)) 
+    install.packages(new_pkg, dependencies = TRUE ,repos = "http://cran.us.r-project.org")
+  sapply(pkg, require, character.only = TRUE)
+}
+
+packs = c("tidyverse","knitr" )
+ipak(packs) 
+knitr::opts_chunk$set(echo = TRUE, error=TRUE)
+opts_knit$set(root.dir = base)
+dir()
+```
+
+# Intro to R
+
+##What is R? How do I use it?
+
+**R** is a programming language designed for statistical analysis. There are many programming languages, with different syntax, speed and features available. Here at Busara we use R for most projects because it is both relatively easy to use and versatile enough to produce all of the outputs our clients require. It's also open-source, and therefore free.
+
+**RStudio** is a _Integrated Development Environment_ (IDE) for the programming language R. It allows you to write code, see the output, view graphs, search for help and many other things in one window. Once you have installed RStudio, you will not need to use the R application itself (except maybe to install updates).
+
+### Installation:
+1. Go to https://cran.rstudio.com/ and download R for your operating system.
+  + If you have Windows, make sure you install Base (you don't need the other components).
+  + For Mac OSX, all you need is R-3.5.1.pkg .
+2. After you've finished installing R, go to https://www.rstudio.com/products/rstudio/download/ and install RStudio Desktop Open Source License (all the way to the left).
+3. Open RStudio. It should look like this:
+![](\\Topic1_IntrotoR\\RStudio.png)
+
+***
+
+## How does R work?
+
+R is an _object-oriented_ programming language. Statistical analysis in R is best thought of as the manipulation of objects such as scalars (i.e numbers), vectors (e.g. a single variable) and matrices (e.g. a single dataset).
+
+Code consists of a series of operations, one or more to a line, such as creating new objects, assigning them names and manipulating them in some way. Code often has *comments*, which are written descriptions of that line's operations that help the user or reader of code better understand what is being done. In R, anything after "#" is a comment. This tells R that what follows should not be treated as code. If you try to leave a comment without the "#", R will give you an error.
+
+###Scalars:
+
+```{r scalars}
+x = 2 # Assigns the value 2 to the name "x"
+y = 2.5 #Assigns the value 2.5 to name "y"
+x + y # Adds the two and displays the result.
+z = x + y #Adds x and y and assigns the name "z" to the result
+z #Evaluates the object "z"
+#This is a comment
+```
+
+```{r not-comment}
+This is not a comment, and will cause an error.
+```
+
+###Vectors:
+Vectors are essentially ordered lists of items. An item can be a number, a "string" (alphanumeric), or other elements.To make a vector, you have to use a **function**, which form the core of what R does. In this case we use the -c()- command, which stands for "combine", to glue scalars together to become vectors. 
+
+```{r vectors}
+my_vector = c(1,2,3) # the combine function makes this a vector
+my_vector 
+
+letter_vector = c("a","b","c") #notice that we have to place strings in quotes
+names(my_vector) = letter_vector #we can assign names to vectors
+my_vector
+```
+
+A lot of data cleaning and data analysis deals with dealing with pieces of vectors at a time. We can grab parts of vectors in multiple ways:
+
+You can refer to elements of a vector by their number (counting left to right, or top to bottom)
+```{r subsets}
+my_vector = c(1,2,4,5,9,16,3) 
+my_vector[3] #evaluates the 3rd element of the vector
+my_vector[3:5] #evaluates the 3rd, 4th and 5th elements
+my_vector[c(3,4,5)] #same
+```
+
+You can also subset vectors based on their values:
+```{r subs2}
+my_vector[my_vector>3] #lists the elements of my_vector greater than 3
+subset_vector = my_vector[my_vector>3] #creates a new object
+```
+
+### Data Frames
+
+When we discuss "data" or a "dataset" we are usually refering to a **data frame** which is a collection of vectors. We clean data to make it "tidy", meaning that each row corresponds to a single observation (e.g. a participant in the lab) and each column corresponds to a different characteristic of that observation (e.g. age, gender, phone number, response in the dictator game, etc). In statistical terms, a data frame is a matrix, but in R the two terms refer to different classes of objects. 
+
+Data frames are more complicated objects than scalars and vectors, and therefore require more functions. 
+
+```{r dataframes}
+#imagine we have following data on 4 participants
+age = c(23,18,32,25) #ages of 4 respondents
+gender = c("female","male","male","female") #genders
+game_earnings = c(125,200,175,200) #their dictator games earnings
+
+data = cbind(age,game_earnings,gender) # this function binds the vectors together as columns of a matrix named "data"
+df = data.frame(data) #this creates another object named "df" which is a data frame of the same
+df #let's look at it
+df$age #the "$" allows you to work with each column independently
+df$age[2]
+```
+
+
+### Installing packages
+
+R comes with a lot of functions installed, including the ones we've used to far. But many of the commands you'll want to are user-written and must be added on. Users write **packages**, which are bundles of functions to handle specific issues. Luckily these are (mostly) contained in a central repository at the CRAN website and can be downloaded by name:
+
+```
+??tidyverse # search for packages
+install.packages("tidyverse") # install the packages
+library(tidyverse) # you must 'load' the installed package in each R session
+```
+
+### Importing Datasets
+
+We rarely make our own data in R; usually we import it from somewhere else (such as an spreadsheet file). There are multiple ways to import data:
+
+* Using the RStudio interface ("point and click"): Navigate to File --> Import Dataset. Choose your file type and its location. _However_, this is not advisable practice in general because this means your code is not _reproductible_, meaning another team member cannot easily tell exactly what you've done.
+
+* By telling R where it is: 
+This means giving R the exact _filepath_ of the data and using functions to import it.
+
+First, let's talk about filepaths:
+```{r filepaths}
+# R always has a location on your machine where it's based at the moment.
+#This is called your "working directory":
+getwd() #Displays your current / working directory
+dir() #displays all the files and folders in that directory
+```
+
+
+Let's say I want to go to my Desktop instead. Since my username is "Daniel Mellow" and I'm on a Windows machine I have to type this:
+```
+setwd("C:/Users/Daniel Mellow/Desktop") #sets my working directory as my Desktop
+```
+
+
+Now I want to fetch a dataset on my desktop. I don't have to specify again that it's on my desktop.
+```
+star_data = read_csv("star_data.csv")
+```
+
+But if it's on the Box Sync I have to write out the full filepath:
+```
+star_data <- read_csv("C:/Users/Daniel Mellow/Box Sync/Data_Training_2018/Cross_Division_Data_Training/Data_Practicum_2018Q4/Topic1_IntrotoR/star_data.csv")
+```
+
+##Resources:
+If this is your first exposure to R, you will want a more in-depth introduction to get the most out of this course. I recommend the free sequence of intro to R courses offered by https://www.datacamp.com/home. Other resources include:
+
+* Jared Knowles' R Bootcamp: https://www.jaredknowles.com/r-bootcamp/
+* A cheetsheet document here: https://www.statmethods.net/r-tutorial/index.html
+* For Stata users, a specially designed tutorial: https://rslbliss.shinyapps.io/R_from_Stata/
+
+##Assignment
+
+Now let's start practicing and get our hands dirty with some real data. 
+
+**In your RStudio open MyFirstScript_Mellow.R** and save it with your name on your Desktop (for practice).
+
+Fill out the questions there. 
+
+
